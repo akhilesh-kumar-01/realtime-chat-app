@@ -24,7 +24,7 @@ const uploadImage = (fileBuffer) => {
       (error, result) => {
         if (error) {
           console.error("Cloudinary Upload Error:", error.message);
-          return resolve(null);
+          return reject(error);
         }
         resolve(result.secure_url);
       }

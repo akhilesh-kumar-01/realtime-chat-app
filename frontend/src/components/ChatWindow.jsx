@@ -172,22 +172,32 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
                 </div>
               )}
               
-              <div className={`max-w-[75%] px-3 py-1.5 text-[17px] leading-[22px] rounded-[18px] ${
+              <div className={`max-w-[75%] px-3 py-1.5 rounded-[18px] flex flex-col ${
                 isMe 
                 ? 'bg-iosBlue text-white rounded-br-sm' 
                 : 'bg-[#E9E9EB] text-black rounded-bl-sm'
               }`}>
-                {msg.image_url && (
-                  <div className="mb-1 mt-1 overflow-hidden rounded-[14px]">
-                    <img 
-                      src={msg.image_url} 
-                      alt="attachment" 
-                      className="max-w-[200px] max-h-[300px] object-cover cursor-pointer hover:opacity-90 transition-opacity" 
-                      onClick={() => window.open(msg.image_url, '_blank')}
-                    />
-                  </div>
+                {msg.image_url && msg.image_url.trim() !== '' && (
+                  <img 
+                    src={msg.image_url} 
+                    alt="image" 
+                    style={{
+                      maxWidth: '220px',
+                      maxHeight: '220px',
+                      borderRadius: '16px',
+                      display: 'block',
+                      cursor: 'pointer',
+                      objectFit: 'cover'
+                    }}
+                    onClick={() => window.open(msg.image_url, '_blank')}
+                    onError={(e) => { e.target.style.display = 'none' }}
+                  />
                 )}
-                {msg.message && <p className="whitespace-pre-wrap px-1 pb-1">{msg.message}</p>}
+                {msg.message && msg.message.trim() !== '' && (
+                  <p style={{ margin: msg.image_url ? '4px 0 0 0' : '0', fontSize: '17px', lineHeight: '22px' }}>
+                    {msg.message}
+                  </p>
+                )}
               </div>
             </div>
           );
