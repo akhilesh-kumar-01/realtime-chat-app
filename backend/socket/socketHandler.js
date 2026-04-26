@@ -25,8 +25,6 @@ const initSocket = (io) => {
 
     // When the user closes the app or disconnects
     socket.on('disconnect', () => {
-      console.log(`Socket disconnected: ${socket.id}`);
-      
       // Find which userId belongs to this socket.id and remove them from the map
       for (const [userId, socketId] of onlineUsers.entries()) {
         if (socketId === socket.id) {

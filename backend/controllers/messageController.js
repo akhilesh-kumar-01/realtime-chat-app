@@ -65,6 +65,7 @@ const sendMessage = async (req, res) => {
     // Real-Time Socket.io Part:
     // Find out if the receiver is currently online (convert string receiverId to Number)
     const receiverSocketId = socketHandler.getSocketId(Number(receiverId));
+    
     if (receiverSocketId && socketHandler.io) {
       // If they are online, send the message directly to their screen!
       socketHandler.io.to(receiverSocketId).emit("newMessage", newMessage);

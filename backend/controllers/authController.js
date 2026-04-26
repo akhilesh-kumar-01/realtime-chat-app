@@ -92,7 +92,7 @@ const getMe = async (req, res) => {
     const userId = req.user.id;
 
     // Find the user by ID
-    const [users] = await db.query('SELECT id, name, email, profile_pic, created_at FROM users WHERE id = ?', [userId]);
+    const [users] = await db.query('SELECT id, name, email, username, profile_pic, created_at FROM users WHERE id = ?', [userId]);
     
     if (users.length === 0) {
       return res.status(404).json({ message: "User not found" });
