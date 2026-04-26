@@ -1,0 +1,35 @@
+name: Deploy Chat App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          npm install
+
+      - name: Install Frontend Dependencies & Build
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      # Add your actual deployment commands here, e.g., to Vercel, Render, or a VPS:
+      # - name: Deploy to Production
+      #   run: |
+      #     echo "Deployment script goes here"
