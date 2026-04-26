@@ -172,15 +172,22 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
                 </div>
               )}
               
-              <div className={`max-w-[75%] px-4 py-2 text-[17px] leading-[22px] rounded-[18px] ${
+              <div className={`max-w-[75%] px-3 py-1.5 text-[17px] leading-[22px] rounded-[18px] ${
                 isMe 
                 ? 'bg-iosBlue text-white rounded-br-sm' 
                 : 'bg-[#E9E9EB] text-black rounded-bl-sm'
               }`}>
                 {msg.image_url && (
-                  <img src={msg.image_url} alt="attachment" className="rounded-[10px] mb-2 max-w-full" />
+                  <div className="mb-1 mt-1 overflow-hidden rounded-[14px]">
+                    <img 
+                      src={msg.image_url} 
+                      alt="attachment" 
+                      className="max-w-[200px] max-h-[300px] object-cover cursor-pointer hover:opacity-90 transition-opacity" 
+                      onClick={() => window.open(msg.image_url, '_blank')}
+                    />
+                  </div>
                 )}
-                {msg.message && <p className="whitespace-pre-wrap">{msg.message}</p>}
+                {msg.message && <p className="whitespace-pre-wrap px-1 pb-1">{msg.message}</p>}
               </div>
             </div>
           );

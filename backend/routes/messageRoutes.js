@@ -4,8 +4,8 @@ const multer = require('multer');
 const { getMessages, sendMessage, clearChat } = require('../controllers/messageController');
 const { verifyToken } = require('../middleware/authMiddleware');
 
-// Configure multer for temporary file storage
-const upload = multer({ dest: 'uploads/' });
+// Configure multer to use memory storage
+const upload = multer({ storage: multer.memoryStorage() });
 
 // GET /api/messages/:userId - Get chat history with a specific user
 // Protected by verifyToken

@@ -35,7 +35,7 @@ const sendMessage = async (req, res) => {
 
     // If an image was attached, upload it to Cloudinary first
     if (req.file) {
-      imageUrl = await uploadImage(req.file.path);
+      imageUrl = await uploadImage(req.file.buffer);
     }
 
     // Feature 3: Block Logic Enforcement
