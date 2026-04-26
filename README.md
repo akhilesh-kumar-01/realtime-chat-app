@@ -2,7 +2,7 @@
 
 Hi! I'm Akhilesh, a B.Tech student. I built this project to learn full-stack web development and figure out how real-time applications actually work under the hood. It was a great learning experience!
 
-![Chat Screenshot](assets/chat-screenshot.png)
+![Chat Screenshot](assets/chat_image.png)
 
 ## What it does
 It's a simple chat app where you can create an account, update your profile picture, and talk to other people in real-time. It looks a bit like iMessage because I really like clean designs.
