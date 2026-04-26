@@ -43,25 +43,20 @@ const updateProfile = async (req, res) => {
 
     // First, check if the user uploaded a new profile picture
     // 'req.file' comes from the multer middleware we set up in routes
-    console.log("updateProfile: req.file =", req.file ? "File received" : "No file");
     if (req.file) {
       // Upload the image to Cloudinary and get the secure URL
-      console.log("updateProfile: Uploading to Cloudinary...");
       profilePicUrl = await uploadImage(req.file.buffer);
-      console.log("updateProfile: Cloudinary URL =", profilePicUrl);
     }
 
     // Now, update the database
     // If they uploaded a new picture, update both name and picture
     // If no new picture, just update the name
     if (profilePicUrl) {
-      console.log("updateProfile: Updating DB with picture...");
       await db.query(
         'UPDATE users SET name = ?, profile_pic = ? WHERE id = ?',
         [name, profilePicUrl, userId]
       );
     } else {
-      console.log("updateProfile: Updating DB with name only...");
       await db.query(
         'UPDATE users SET name = ? WHERE id = ?',
         [name, userId]
