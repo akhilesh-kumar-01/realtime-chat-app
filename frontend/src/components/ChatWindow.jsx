@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { ChevronLeft, Video, Phone } from 'lucide-react';
+import { ChevronLeft, Video, Phone, MoreVertical } from 'lucide-react';
 import api from '../utils/api';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
@@ -10,6 +10,9 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
   const { socket, onlineUsers } = useSocket();
   const { authUser } = useAuth();
   const messagesEndRef = useRef(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [isMuted, setIsMuted] = useState(false); // Can be initialized from API later
+  const [isBlocked, setIsBlocked] = useState(false); // Can be initialized from API later
 
   // Fetch messages when selected user changes
   useEffect(() => {
@@ -58,6 +61,32 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
     }
   };
 
+  const handleClearChat = async () => {
+    if (!window.confirm("Are you sure you want to clear all messages? This will delete them for both users.")) return;
+    try {
+      await api.delete(`/messages/${selectedUser.id}`);
+      setMessages([]);
+      setShowDropdown(false);
+    } catch (error) {
+      console.error("Failed to clear chat", error);
+    }
+  };
+
+  const handleToggleRelationship = async (action) => {
+    // action: 'block', 'unblock', 'mute', 'unmute'
+    if (action === 'block' && !window.confirm("Are you sure you want to block this user?")) return;
+    try {
+      await api.post(`/users/${selectedUser.id}/relationship`, { action });
+      if (action === 'block') setIsBlocked(true);
+      if (action === 'unblock') setIsBlocked(false);
+      if (action === 'mute') setIsMuted(true);
+      if (action === 'unmute') setIsMuted(false);
+      setShowDropdown(false);
+    } catch (error) {
+      console.error(`Failed to ${action} user`, error);
+    }
+  };
+
   const isOnline = onlineUsers.includes(selectedUser.id);
 
   return (
@@ -87,9 +116,43 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
           </div>
         </div>
         
-        <div className="flex items-center gap-5 text-iosBlue">
+        <div className="flex items-center gap-5 text-iosBlue relative">
           <Video size={24} />
           <Phone size={24} />
+          <button onClick={() => setShowDropdown(!showDropdown)} className="active:opacity-50">
+            <MoreVertical size={24} />
+          </button>
+          
+          {/* Dropdown Menu */}
+          {showDropdown && (
+            <>
+              {/* Invisible overlay to close dropdown when clicking outside */}
+              <div 
+                className="fixed inset-0 z-40" 
+                onClick={() => setShowDropdown(false)}
+              ></div>
+              <div className="absolute top-10 right-0 w-48 bg-white/90 backdrop-blur-xl border border-gray-200/50 shadow-lg rounded-[14px] overflow-hidden z-50">
+                <button 
+                  onClick={() => handleToggleRelationship(isMuted ? 'unmute' : 'mute')}
+                  className="w-full text-left px-4 py-3 text-[17px] text-black border-b border-gray-200/50 hover:bg-gray-100/50 active:bg-gray-200"
+                >
+                  {isMuted ? 'Unmute Notifications' : 'Mute Notifications'}
+                </button>
+                <button 
+                  onClick={handleClearChat}
+                  className="w-full text-left px-4 py-3 text-[17px] text-black border-b border-gray-200/50 hover:bg-gray-100/50 active:bg-gray-200"
+                >
+                  Clear Chat
+                </button>
+                <button 
+                  onClick={() => handleToggleRelationship(isBlocked ? 'unblock' : 'block')}
+                  className="w-full text-left px-4 py-3 text-[17px] text-red-500 hover:bg-gray-100/50 active:bg-gray-200 font-medium"
+                >
+                  {isBlocked ? 'Unblock User' : 'Block User'}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

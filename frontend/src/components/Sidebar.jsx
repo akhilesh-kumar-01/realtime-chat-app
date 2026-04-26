@@ -14,16 +14,23 @@ function Sidebar({ selectedUser, setSelectedUser }) {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await api.get('/users');
+        const res = await api.get(`/users?search=${search}`);
         setUsers(res.data);
       } catch (error) {
         console.error("Failed to fetch users", error);
       }
     };
-    fetchUsers();
-  }, []);
+    // Fetch users when the component mounts or when search changes.
+    // Adding a small delay (debounce) could be nice, but simple fetch is fine.
+    const delayDebounceFn = setTimeout(() => {
+      fetchUsers();
+    }, 300);
 
-  const filteredUsers = users.filter(u => u.name.toLowerCase().includes(search.toLowerCase()));
+    return () => clearTimeout(delayDebounceFn);
+  }, [search]);
+
+  // Frontend filtering is no longer needed since backend handles it
+  const filteredUsers = users;
 
   return (
     <div className="flex flex-col h-full bg-white">
@@ -80,8 +87,15 @@ function Sidebar({ selectedUser, setSelectedUser }) {
                 )}
               </div>
               <div className={`ml-3 flex-1 overflow-hidden border-b pb-4 pt-2 border-gray-200/50 ${isSelected ? 'border-transparent' : ''}`}>
-                <div className={`font-semibold text-[17px] truncate ${isSelected ? 'text-white' : 'text-black'}`}>
-                  {user.name}
+                <div className="flex items-center justify-between">
+                  <div className={`font-semibold text-[17px] truncate ${isSelected ? 'text-white' : 'text-black'}`}>
+                    {user.name}
+                  </div>
+                  {user.username && (
+                    <div className={`text-[13px] ${isSelected ? 'text-white/70' : 'text-iosGray'}`}>
+                      @{user.username}
+                    </div>
+                  )}
                 </div>
                 <div className={`text-[15px] truncate mt-0.5 ${isSelected ? 'text-white/80' : 'text-iosGray'}`}>
                   {isOnline ? 'Online now' : 'Tap to chat'}

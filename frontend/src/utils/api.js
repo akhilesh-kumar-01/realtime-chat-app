@@ -26,4 +26,17 @@ api.interceptors.request.use(
   }
 );
 
+// Add a response interceptor to catch 401 errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('jwt_token');
+      // Redirect to login page on expired/invalid token
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

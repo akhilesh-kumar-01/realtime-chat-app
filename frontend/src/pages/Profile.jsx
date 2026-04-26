@@ -11,6 +11,18 @@ function Profile() {
   const [profilePic, setProfilePic] = useState(null);
   const [preview, setPreview] = useState(authUser?.profile_pic || null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm("Are you sure you want to delete your account? This action cannot be undone and will delete all your messages.")) return;
+    try {
+      await api.delete('/users/profile');
+      logout();
+    } catch (error) {
+      toast.error('Failed to delete account');
+      console.error(error);
+    }
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -90,19 +102,54 @@ function Profile() {
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
-            <div className="flex items-center px-4 py-[14px]">
+            <div className="flex items-center px-4 py-[14px] border-b border-gray-200/50">
               <span className="w-1/3 text-[17px] text-black">Email</span>
               <span className="w-2/3 text-[17px] text-iosGray text-right overflow-hidden text-ellipsis">{authUser?.email}</span>
             </div>
+            <div className="flex items-center px-4 py-[14px]">
+              <span className="w-1/3 text-[17px] text-black">Username</span>
+              <span className="w-2/3 text-[17px] text-iosGray text-right overflow-hidden text-ellipsis">@{authUser?.username}</span>
+            </div>
           </div>
 
-          <div className="bg-white rounded-[12px] overflow-hidden shadow-sm border border-gray-200/50 mt-8">
-            <button onClick={logout} className="w-full px-4 py-[14px] text-center text-[17px] text-red-500 font-semibold active:bg-gray-50 transition-colors">
+          <div className="bg-white rounded-[12px] overflow-hidden shadow-sm border border-gray-200/50 mt-6">
+            <button onClick={() => setShowPrivacy(true)} className="w-full px-4 py-[14px] text-left text-[17px] text-black border-b border-gray-200/50 active:bg-gray-50 transition-colors">
+              Privacy Policy
+            </button>
+            <button onClick={logout} className="w-full px-4 py-[14px] text-center text-[17px] text-iosBlue border-b border-gray-200/50 active:bg-gray-50 transition-colors">
               Sign Out
             </button>
+            <button onClick={handleDeleteAccount} className="w-full px-4 py-[14px] text-center text-[17px] text-red-500 font-semibold active:bg-gray-50 transition-colors">
+              Delete Account
+            </button>
+          </div>
+
+          <div className="mt-8 text-center text-iosGray text-[13px]">
+            <p>ChatApp Version 1.0.0</p>
+            <p className="mt-1">Built by Akhilesh Kumar</p>
           </div>
         </div>
       </div>
+
+      {/* Privacy Policy Modal */}
+      {showPrivacy && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
+          <div className="bg-white rounded-[14px] max-w-sm w-full overflow-hidden shadow-xl">
+            <div className="px-6 py-5 text-center border-b border-gray-200/50">
+              <h3 className="text-[17px] font-semibold text-black">Privacy Policy</h3>
+              <p className="text-[13px] text-iosGray mt-2">
+                Your messages are stored securely in our database. If you delete your account, all your messages and personal data will be permanently removed.
+              </p>
+            </div>
+            <button 
+              onClick={() => setShowPrivacy(false)}
+              className="w-full py-[14px] text-[17px] font-semibold text-iosBlue active:bg-gray-100 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

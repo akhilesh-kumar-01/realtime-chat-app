@@ -38,6 +38,17 @@ const sendMessage = async (req, res) => {
       imageUrl = await uploadImage(req.file.path);
     }
 
+    // Feature 3: Block Logic Enforcement
+    // Check if the receiver has blocked the sender
+    const [blocked] = await db.query(
+      'SELECT * FROM user_relationships WHERE user_id = ? AND target_user_id = ? AND is_blocked = 1',
+      [receiverId, senderId]
+    );
+
+    if (blocked.length > 0) {
+      return res.status(403).json({ message: "You are blocked by this user" });
+    }
+
     // Insert the new message into the MySQL database
     const [result] = await db.query(
       'INSERT INTO messages (sender_id, receiver_id, message, image_url) VALUES (?, ?, ?, ?)',
@@ -52,8 +63,8 @@ const sendMessage = async (req, res) => {
     const newMessage = newMessages[0];
 
     // Real-Time Socket.io Part:
-    // Find out if the receiver is currently online
-    const receiverSocketId = socketHandler.getSocketId(receiverId);
+    // Find out if the receiver is currently online (convert string receiverId to Number)
+    const receiverSocketId = socketHandler.getSocketId(Number(receiverId));
     if (receiverSocketId && socketHandler.io) {
       // If they are online, send the message directly to their screen!
       socketHandler.io.to(receiverSocketId).emit("newMessage", newMessage);
@@ -67,4 +78,25 @@ const sendMessage = async (req, res) => {
   }
 };
 
-module.exports = { getMessages, sendMessage };
+// Function to completely clear conversation history between two users
+const clearChat = async (req, res) => {
+  try {
+    const myId = req.user.id;
+    const otherUserId = req.params.userId;
+
+    // Delete all messages globally (for both users)
+    await db.query(
+      `DELETE FROM messages 
+       WHERE (sender_id = ? AND receiver_id = ?) 
+          OR (sender_id = ? AND receiver_id = ?)`,
+      [myId, otherUserId, otherUserId, myId]
+    );
+
+    return res.status(200).json({ message: "Chat cleared successfully" });
+  } catch (error) {
+    console.error("Clear Chat Error:", error);
+    return res.status(500).json({ message: "Server error clearing chat" });
+  }
+};
+
+module.exports = { getMessages, sendMessage, clearChat };

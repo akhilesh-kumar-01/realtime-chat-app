@@ -5,6 +5,7 @@ import { Eye, EyeOff } from 'lucide-react';
 
 function Register() {
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -13,7 +14,7 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await register(name, email, password);
+    const success = await register(name, username, email, password);
     if (success) {
       navigate('/login');
     }
@@ -39,6 +40,18 @@ function Register() {
               className="w-full bg-transparent outline-none text-[17px] text-black placeholder:text-iosGray"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Username Input */}
+          <div className="px-4 py-3 border-b border-gray-200/50">
+            <input
+              type="text"
+              placeholder="Username"
+              className="w-full bg-transparent outline-none text-[17px] text-black placeholder:text-iosGray"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
               required
             />
           </div>

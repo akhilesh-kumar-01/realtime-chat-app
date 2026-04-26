@@ -7,17 +7,20 @@ require('dotenv').config();
 // Function to handle new user registration
 const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, username } = req.body;
 
     // 1. Check if the user provided all required fields
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "Please provide name, email, and password" });
+    if (!name || !email || !password || !username) {
+      return res.status(400).json({ message: "Please provide name, username, email, and password" });
     }
 
-    // 2. Check if the email is already registered in our database
-    const [existingUsers] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+    // 2. Check if the email or username is already registered in our database
+    const [existingUsers] = await db.query('SELECT * FROM users WHERE email = ? OR username = ?', [email, username]);
     if (existingUsers.length > 0) {
-      return res.status(400).json({ message: "User with this email already exists" });
+      const isEmailTaken = existingUsers.some(u => u.email === email);
+      return res.status(400).json({ 
+        message: isEmailTaken ? "User with this email already exists" : "Username is already taken" 
+      });
     }
 
     // 3. Hash the password for security (10 rounds of salt)
@@ -26,8 +29,8 @@ const register = async (req, res) => {
 
     // 4. Insert the new user into the database
     await db.query(
-      'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-      [name, email, hashedPassword]
+      'INSERT INTO users (name, username, email, password) VALUES (?, ?, ?, ?)',
+      [name, username, email, hashedPassword]
     );
 
     // 5. Send a welcome email in the background

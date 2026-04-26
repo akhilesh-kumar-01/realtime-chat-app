@@ -59,9 +59,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (name, email, password) => {
+  const register = async (name, username, email, password) => {
     try {
-      await api.post('/auth/register', { name, email, password });
+      await api.post('/auth/register', { name, username, email, password });
       toast.success("Account created! You can now log in.");
       return true;
     } catch (error) {
@@ -75,6 +75,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('jwt_token');
     setAuthUser(null);
     toast.success("Logged out successfully");
+    window.location.href = '/login';
   };
 
   return (
