@@ -4,6 +4,7 @@ import api from '../utils/api';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
 import MessageInput from './MessageInput';
+import toast from 'react-hot-toast';
 
 function ChatWindow({ selectedUser, setSelectedUser }) {
   const [messages, setMessages] = useState([]);
@@ -13,6 +14,29 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [isMuted, setIsMuted] = useState(false); // Can be initialized from API later
   const [isBlocked, setIsBlocked] = useState(false); // Can be initialized from API later
+
+  // Helper to format time
+  const formatTime = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  // Helper to get date label
+  const getDateLabel = (dateStr) => {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) return 'Today';
+    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    
+    return date.toLocaleDateString([], { day: 'numeric', month: 'short' });
+  };
 
   // Fetch messages when selected user changes
   useEffect(() => {
@@ -117,8 +141,12 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
         </div>
         
         <div className="flex items-center gap-5 text-iosBlue relative">
-          <Video size={24} />
-          <Phone size={24} />
+          <button onClick={() => toast("Video calling coming soon! \u{1F3A5}")}>
+            <Video size={24} />
+          </button>
+          <button onClick={() => toast("Voice calling coming soon! \u{1F4DE}")}>
+            <Phone size={24} />
+          </button>
           <button onClick={() => setShowDropdown(!showDropdown)} className="active:opacity-50">
             <MoreVertical size={24} />
           </button>
@@ -145,8 +173,14 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
                   Clear Chat
                 </button>
                 <button 
+                  onClick={handleClearChat}
+                  className="w-full text-left px-4 py-3 text-[17px] text-red-500 border-b border-gray-200/50 hover:bg-gray-100/50 active:bg-gray-200 font-medium"
+                >
+                  Delete Chat
+                </button>
+                <button 
                   onClick={() => handleToggleRelationship(isBlocked ? 'unblock' : 'block')}
-                  className="w-full text-left px-4 py-3 text-[17px] text-red-500 hover:bg-gray-100/50 active:bg-gray-200 font-medium"
+                  className="w-full text-left px-4 py-3 text-[17px] text-red-500 hover:bg-gray-100/50 active:bg-gray-200"
                 >
                   {isBlocked ? 'Unblock User' : 'Block User'}
                 </button>
@@ -160,46 +194,63 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {messages.map((msg, index) => {
           const isMe = msg.sender_id === authUser.id;
+          const prevMsg = index > 0 ? messages[index - 1] : null;
+          const showDateSeparator = !prevMsg || new Date(msg.created_at).toDateString() !== new Date(prevMsg.created_at).toDateString();
+
           return (
-            <div key={msg.id || index} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-              {!isMe && (
-                <div className="w-7 h-7 rounded-full bg-gray-200 mr-2 flex-shrink-0 self-end overflow-hidden mb-1">
-                   {selectedUser.profile_pic ? (
-                     <img src={selectedUser.profile_pic} alt="avatar" className="w-full h-full object-cover" />
-                   ) : (
-                     <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 font-semibold">{selectedUser.name.charAt(0).toUpperCase()}</div>
-                   )}
+            <React.Fragment key={msg.id || index}>
+              {showDateSeparator && (
+                <div className="flex justify-center my-4">
+                  <span className="bg-[#E5E5EA] text-iosGray text-[12px] px-3 py-1 rounded-full font-medium">
+                    {getDateLabel(msg.created_at)}
+                  </span>
                 </div>
               )}
-              
-              <div className={`max-w-[75%] px-3 py-1.5 rounded-[18px] flex flex-col ${
-                isMe 
-                ? 'bg-iosBlue text-white rounded-br-sm' 
-                : 'bg-[#E9E9EB] text-black rounded-bl-sm'
-              }`}>
-                {msg.image_url && msg.image_url.trim() !== '' && (
-                  <img 
-                    src={msg.image_url} 
-                    alt="image" 
-                    style={{
-                      maxWidth: '220px',
-                      maxHeight: '220px',
-                      borderRadius: '16px',
-                      display: 'block',
-                      cursor: 'pointer',
-                      objectFit: 'cover'
-                    }}
-                    onClick={() => window.open(msg.image_url, '_blank')}
-                    onError={(e) => { e.target.style.display = 'none' }}
-                  />
-                )}
-                {msg.message && msg.message.trim() !== '' && (
-                  <p style={{ margin: msg.image_url ? '4px 0 0 0' : '0', fontSize: '17px', lineHeight: '22px' }}>
-                    {msg.message}
-                  </p>
-                )}
+              <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                <div className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                  {!isMe && (
+                    <div className="w-7 h-7 rounded-full bg-gray-200 mr-2 flex-shrink-0 self-end overflow-hidden mb-1">
+                       {selectedUser.profile_pic ? (
+                         <img src={selectedUser.profile_pic} alt="avatar" className="w-full h-full object-cover" />
+                       ) : (
+                         <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 font-semibold">{selectedUser.name.charAt(0).toUpperCase()}</div>
+                       )}
+                    </div>
+                  )}
+                  
+                  <div className={`max-w-[75%] px-3 py-1.5 rounded-[18px] flex flex-col ${
+                    isMe 
+                    ? 'bg-iosBlue text-white rounded-br-sm' 
+                    : 'bg-[#E9E9EB] text-black rounded-bl-sm'
+                  }`}>
+                    {msg.image_url && msg.image_url.trim() !== '' && (
+                      <img 
+                        src={msg.image_url} 
+                        alt="image" 
+                        style={{
+                          maxWidth: '220px',
+                          maxHeight: '220px',
+                          borderRadius: '16px',
+                          display: 'block',
+                          cursor: 'pointer',
+                          objectFit: 'cover'
+                        }}
+                        onClick={() => window.open(msg.image_url, '_blank')}
+                        onError={(e) => { e.target.style.display = 'none' }}
+                      />
+                    )}
+                    {msg.message && msg.message.trim() !== '' && (
+                      <p style={{ margin: msg.image_url ? '4px 0 0 0' : '0', fontSize: '17px', lineHeight: '22px' }}>
+                        {msg.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <span className={`text-[11px] text-iosGray mt-1 mx-2 ${isMe ? 'mr-2' : 'ml-9'}`}>
+                  {formatTime(msg.created_at)}
+                </span>
               </div>
-            </div>
+            </React.Fragment>
           );
         })}
         <div ref={messagesEndRef} />

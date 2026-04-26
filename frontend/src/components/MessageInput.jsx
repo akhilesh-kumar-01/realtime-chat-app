@@ -1,10 +1,12 @@
 import React, { useState, useRef } from 'react';
-import { Plus, Camera, Send } from 'lucide-react';
+import { Plus, Camera, Send, Image, FileText } from 'lucide-react';
 
 function MessageInput({ onSendMessage }) {
   const [text, setText] = useState('');
   const [image, setImage] = useState(null);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
   const fileInputRef = useRef(null);
+  const allFileInputRef = useRef(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,10 +23,11 @@ function MessageInput({ onSendMessage }) {
     setText('');
     setImage(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
+    if (allFileInputRef.current) allFileInputRef.current.value = '';
   };
 
   return (
-    <div className="px-4 py-3 bg-[#F6F6F6] border-t border-gray-200/50 pb-safe z-10">
+    <div className="px-4 py-3 bg-[#F6F6F6] border-t border-gray-200/50 pb-safe z-10 relative">
       {/* Image Preview Box */}
       {image && (
         <div className="mb-2 relative inline-block">
@@ -39,9 +42,42 @@ function MessageInput({ onSendMessage }) {
         </div>
       )}
       
+      {/* Attachment Menu */}
+      {showAttachMenu && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setShowAttachMenu(false)}></div>
+          <div className="absolute bottom-16 left-4 bg-white/90 backdrop-blur-xl border border-gray-200 shadow-xl rounded-2xl p-2 z-50 flex flex-col gap-1 min-w-[160px] animate-in fade-in slide-in-from-bottom-2 duration-200">
+            <button 
+              type="button"
+              onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}
+              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 rounded-xl transition-colors text-black active:scale-95"
+            >
+              <div className="w-9 h-9 rounded-full bg-iosBlue/10 flex items-center justify-center text-iosBlue">
+                <Image size={20} />
+              </div>
+              <span className="text-[17px]">Send Image</span>
+            </button>
+            <button 
+              type="button"
+              onClick={() => { allFileInputRef.current?.click(); setShowAttachMenu(false); }}
+              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 rounded-xl transition-colors text-black active:scale-95"
+            >
+              <div className="w-9 h-9 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500">
+                <FileText size={20} />
+              </div>
+              <span className="text-[17px]">Send File</span>
+            </button>
+          </div>
+        </>
+      )}
+
       {/* Input Bar */}
       <form onSubmit={handleSubmit} className="flex items-end gap-3">
-        <button type="button" className="text-iosGray p-1 mb-1.5 active:opacity-70 transition-opacity">
+        <button 
+          type="button" 
+          onClick={() => setShowAttachMenu(!showAttachMenu)}
+          className={`p-1 mb-1.5 active:opacity-70 transition-all ${showAttachMenu ? 'text-iosBlue rotate-45' : 'text-iosGray'}`}
+        >
           <Plus size={26} />
         </button>
         
@@ -65,6 +101,12 @@ function MessageInput({ onSendMessage }) {
             accept="image/*" 
             className="hidden" 
             ref={fileInputRef}
+            onChange={(e) => setImage(e.target.files[0])}
+          />
+          <input 
+            type="file" 
+            className="hidden" 
+            ref={allFileInputRef}
             onChange={(e) => setImage(e.target.files[0])}
           />
         </div>
