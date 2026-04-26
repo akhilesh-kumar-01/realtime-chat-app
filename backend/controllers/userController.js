@@ -65,7 +65,7 @@ const updateProfile = async (req, res) => {
 
     // Fetch the updated user data to return to the frontend
     const [updatedUsers] = await db.query(
-      'SELECT id, name, email, profile_pic, created_at FROM users WHERE id = ?',
+      'SELECT id, name, email, username, profile_pic, created_at FROM users WHERE id = ?',
       [userId]
     );
 

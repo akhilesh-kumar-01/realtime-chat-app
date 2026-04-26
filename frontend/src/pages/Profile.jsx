@@ -65,9 +65,13 @@ function Profile() {
           <span className="text-[17px] -ml-1">Chats</span>
         </Link>
         <h1 className="font-semibold text-black text-[17px]">Profile</h1>
-        <button onClick={handleSave} disabled={isLoading} className="text-iosBlue text-[17px] w-20 text-right font-semibold active:opacity-70 transition-opacity">
-          {isLoading ? 'Saving...' : 'Edit'}
-        </button>
+        {(profilePic || name !== authUser?.name) ? (
+          <button onClick={handleSave} disabled={isLoading} className="text-iosBlue text-[17px] w-20 text-right font-bold active:opacity-70 transition-opacity animate-pulse">
+            {isLoading ? 'Saving...' : 'Save'}
+          </button>
+        ) : (
+          <div className="w-20"></div>
+        )}
       </div>
 
       <div className="px-4 py-8 flex flex-col items-center flex-1">
@@ -78,7 +82,7 @@ function Profile() {
               <img src={preview} alt="profile" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-5xl font-semibold text-white">
-                {name.charAt(0).toUpperCase()}
+                {authUser?.name ? authUser.name.charAt(0).toUpperCase() : '?'}
               </div>
             )}
           </div>
