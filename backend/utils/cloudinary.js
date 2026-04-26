@@ -11,30 +11,28 @@ cloudinary.config({
 
 // Function to upload an image to Cloudinary
 // It takes the local file path as an argument and returns the online URL
-const uploadImage = async (filePath) => {
-  try {
-    // If no file path is provided, stop and return null
-    if (!filePath) return null;
+// Function to upload an image buffer to Cloudinary using a stream
+const uploadImage = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    if (!fileBuffer) return resolve(null);
 
-    // Upload the file to cloudinary
-    const response = await cloudinary.uploader.upload(filePath, {
-      folder: "chatapp", // puts all images in a specific folder on Cloudinary
-      resource_type: "auto"
-    });
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: "chatapp",
+        resource_type: "auto",
+      },
+      (error, result) => {
+        if (error) {
+          console.error("Cloudinary Upload Error:", error.message);
+          return resolve(null);
+        }
+        resolve(result.secure_url);
+      }
+    );
 
-    // After uploading, we don't need the local file anymore, so we delete it
-    fs.unlinkSync(filePath);
-
-    // Return the secure online URL so we can save it in our MySQL database
-    return response.secure_url;
-  } catch (error) {
-    console.error("Cloudinary Upload Error:", error.message);
-    // If upload fails, try to clean up the local file anyway
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-    return null;
-  }
+    // End the stream and send the buffer
+    uploadStream.end(fileBuffer);
+  });
 };
 
 module.exports = { uploadImage };
