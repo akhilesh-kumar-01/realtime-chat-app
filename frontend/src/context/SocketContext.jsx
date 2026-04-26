@@ -37,6 +37,7 @@ export const SocketProvider = ({ children }) => {
       // Cleanup function: when the user logs out or closes the app, disconnect cleanly
       return () => {
         socketConnection.disconnect();
+        setSocket(null);
       };
     } else {
       // If the user logs out, make sure we disconnect the socket and clear the state
@@ -45,7 +46,6 @@ export const SocketProvider = ({ children }) => {
         setSocket(null);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authUser]); // Re-run this effect whenever 'authUser' changes (login/logout)
 
   return (
