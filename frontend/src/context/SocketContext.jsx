@@ -20,7 +20,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     // If the user is logged in, we connect to the socket server
     if (authUser) {
-      const socketConnection = io("http://localhost:5000");
+      const socketConnection = io(import.meta.env.VITE_SOCKET_URL || "https://realtime-chat-app-34u8.onrender.com");
 
       setSocket(socketConnection);
 
