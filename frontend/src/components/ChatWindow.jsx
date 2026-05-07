@@ -17,7 +17,9 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
 
   // Helper to format time
   const formatTime = (timestamp) => {
+    if (!timestamp) return '';
     const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return '';
     return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -27,7 +29,9 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
 
   // Helper to get date label
   const getDateLabel = (dateStr) => {
+    if (!dateStr) return '';
     const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '';
     const today = new Date();
     const yesterday = new Date();
     yesterday.setDate(today.getDate() - 1);
@@ -195,14 +199,17 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
         {messages.map((msg, index) => {
           const isMe = msg.sender_id === authUser.id;
           const prevMsg = index > 0 ? messages[index - 1] : null;
-          const showDateSeparator = !prevMsg || new Date(msg.created_at).toDateString() !== new Date(prevMsg.created_at).toDateString();
+          const msgDate = msg.created_at || msg.createdAt;
+          const prevMsgDate = prevMsg ? (prevMsg.created_at || prevMsg.createdAt) : null;
+          
+          const showDateSeparator = !prevMsg || (msgDate && prevMsgDate && new Date(msgDate).toDateString() !== new Date(prevMsgDate).toDateString());
 
           return (
             <React.Fragment key={msg.id || index}>
               {showDateSeparator && (
                 <div className="flex justify-center my-4">
                   <span className="bg-[#E5E5EA] text-iosGray text-[12px] px-3 py-1 rounded-full font-medium">
-                    {getDateLabel(msg.created_at)}
+                    {getDateLabel(msgDate)}
                   </span>
                 </div>
               )}
@@ -247,7 +254,7 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
                   </div>
                 </div>
                 <span className={`text-[11px] text-iosGray mt-1 mx-2 ${isMe ? 'mr-2' : 'ml-9'}`}>
-                  {formatTime(msg.created_at)}
+                  {formatTime(msg.created_at || msg.createdAt)}
                 </span>
               </div>
             </React.Fragment>
