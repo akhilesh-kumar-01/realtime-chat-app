@@ -7,6 +7,7 @@ import MessageInput from './MessageInput';
 import toast from 'react-hot-toast';
 import ImageModal from './ImageModal';
 import ForwardModal from './ForwardModal';
+import UserProfileModal from './UserProfileModal';
 
 function ChatWindow({ selectedUser, setSelectedUser }) {
   const [messages, setMessages] = useState([]);
@@ -20,6 +21,9 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
   // Image related states
   const [activeImageUrl, setActiveImageUrl] = useState(null);
   const [forwardingImageUrl, setForwardingImageUrl] = useState(null);
+  
+  // Profile related state
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   // Helper to format time
   const formatTime = (timestamp) => {
@@ -123,6 +127,14 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
   return (
     <div className="flex-1 flex flex-col h-full bg-white relative min-w-0 overflow-hidden">
       {/* Modals */}
+      {showProfileModal && (
+        <UserProfileModal 
+          user={selectedUser} 
+          isOnline={isOnline}
+          onClose={() => setShowProfileModal(false)} 
+        />
+      )}
+
       {activeImageUrl && (
         <ImageModal 
           imageUrl={activeImageUrl} 
@@ -154,7 +166,10 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
               <span className="text-[17px] -ml-1 font-medium">Chats</span>
             </button>
             
-            <div className="flex items-center ml-1 overflow-hidden">
+            <div 
+              className="flex items-center ml-1 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden"
+              onClick={() => setShowProfileModal(true)}
+            >
               <div className="w-9 h-9 rounded-full bg-gray-200 mr-2 overflow-hidden flex-shrink-0 border border-gray-100">
                  {selectedUser.profile_pic ? (
                    <img src={selectedUser.profile_pic} alt="avatar" className="w-full h-full object-cover" />
@@ -186,6 +201,9 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)}></div>
                 <div className="absolute top-10 right-0 w-48 bg-white border border-gray-200/50 shadow-lg rounded-[14px] overflow-hidden z-50">
+                  <button onClick={() => setShowProfileModal(true)} className="w-full text-left px-4 py-3 text-[17px] text-black border-b border-gray-200 hover:bg-gray-50 active:bg-gray-100">
+                    View Info
+                  </button>
                   <button onClick={() => handleToggleRelationship(isMuted ? 'unmute' : 'mute')} className="w-full text-left px-4 py-3 text-[17px] text-black border-b border-gray-200 hover:bg-gray-50 active:bg-gray-100">
                     {isMuted ? 'Unmute' : 'Mute'}
                   </button>
@@ -223,7 +241,10 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
               <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                 <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} w-full`}>
                   {!isMe && (
-                    <div className="w-7 h-7 rounded-full bg-gray-200 mr-2 flex-shrink-0 self-end overflow-hidden mb-1">
+                    <div 
+                      className="w-7 h-7 rounded-full bg-gray-200 mr-2 flex-shrink-0 self-end overflow-hidden mb-1 cursor-pointer hover:scale-110 transition-transform"
+                      onClick={() => setShowProfileModal(true)}
+                    >
                        {selectedUser.profile_pic ? (
                          <img src={selectedUser.profile_pic} alt="avatar" className="w-full h-full object-cover" />
                        ) : (
