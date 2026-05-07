@@ -178,7 +178,7 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
       </div>
 
       {/* Chat Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 no-scrollbar bg-white">
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 no-scrollbar bg-white">
         {messages.map((msg, index) => {
           const isMe = msg.sender_id === authUser.id;
           const prevMsg = index > 0 ? messages[index - 1] : null;
@@ -207,10 +207,10 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
                     </div>
                   )}
                   
-                  <div className={`max-w-[75%] px-3 py-1.5 rounded-[18px] flex flex-col ${
+                  <div className={`max-w-[75%] px-3 py-2 rounded-[18px] flex flex-col ${
                     isMe 
-                    ? 'bg-iosBlue text-white rounded-br-sm' 
-                    : 'bg-[#E9E9EB] text-black rounded-bl-sm'
+                    ? 'bg-iosBlue text-white rounded-br-sm shadow-sm' 
+                    : 'bg-[#E9E9EB] text-black rounded-bl-sm shadow-sm'
                   }`}>
                     {msg.image_url && (
                       <img src={msg.image_url} alt="image" className="max-w-full rounded-2xl mb-1 cursor-pointer" onClick={() => window.open(msg.image_url, '_blank')} />
