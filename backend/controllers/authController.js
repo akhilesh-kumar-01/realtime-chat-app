@@ -78,8 +78,9 @@ const login = async (req, res) => {
     const userData = user.toObject();
     delete userData.password;
     
-    // Add id field for frontend compatibility
+    // Add compatibility fields
     userData.id = userData._id;
+    userData.created_at = userData.createdAt;
 
     return res.status(200).json({ token, user: userData });
   } catch (error) {
@@ -100,6 +101,7 @@ const getMe = async (req, res) => {
 
     const userData = user.toObject();
     userData.id = userData._id;
+    userData.created_at = userData.createdAt;
 
     return res.status(200).json(userData);
   } catch (error) {

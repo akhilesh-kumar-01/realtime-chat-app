@@ -20,6 +20,7 @@ const getMessages = async (req, res) => {
     const formattedMessages = messages.map(m => {
       const obj = m.toObject();
       obj.id = obj._id;
+      obj.created_at = obj.createdAt;
       return obj;
     });
 
@@ -60,6 +61,7 @@ const sendMessage = async (req, res) => {
 
     const savedMessage = newMessage.toObject();
     savedMessage.id = savedMessage._id;
+    savedMessage.created_at = savedMessage.createdAt;
 
     // Real-Time Socket.io
     const receiverSocketId = socketHandler.getSocketId(receiverId);

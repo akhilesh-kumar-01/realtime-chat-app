@@ -48,7 +48,8 @@ const getAllUsers = async (req, res) => {
       {
         $addFields: {
           last_message_time: { $ifNull: [{ $arrayElemAt: ['$lastMessage.createdAt', 0] }, new Date(0)] },
-          id: '$_id'
+          id: '$_id',
+          created_at: '$createdAt'
         }
       },
       {
@@ -89,6 +90,7 @@ const updateProfile = async (req, res) => {
 
     const userData = updatedUser.toObject();
     userData.id = userData._id;
+    userData.created_at = userData.createdAt;
 
     return res.status(200).json(userData);
   } catch (error) {
