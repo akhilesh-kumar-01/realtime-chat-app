@@ -12,8 +12,8 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
   const { authUser } = useAuth();
   const messagesEndRef = useRef(null);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [isMuted, setIsMuted] = useState(false); // Can be initialized from API later
-  const [isBlocked, setIsBlocked] = useState(false); // Can be initialized from API later
+  const [isMuted, setIsMuted] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
 
   // Helper to format time
   const formatTime = (timestamp) => {
@@ -62,7 +62,6 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
     if (!socket) return;
 
     const handleNewMessage = (newMessage) => {
-      // Only append if the message belongs to the current chat
       if (newMessage.sender_id === selectedUser.id || newMessage.receiver_id === selectedUser.id) {
         setMessages((prev) => [...prev, newMessage]);
       }
@@ -82,7 +81,6 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
       const res = await api.post(`/messages/${selectedUser.id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      // Add the message to our local screen immediately
       setMessages((prev) => [...prev, res.data]);
     } catch (error) {
       console.error("Failed to send message", error);
@@ -90,7 +88,7 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
   };
 
   const handleClearChat = async () => {
-    if (!window.confirm("Are you sure you want to clear all messages? This will delete them for both users.")) return;
+    if (!window.confirm("Are you sure you want to clear all messages?")) return;
     try {
       await api.delete(`/messages/${selectedUser.id}`);
       setMessages([]);
@@ -101,7 +99,6 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
   };
 
   const handleToggleRelationship = async (action) => {
-    // action: 'block', 'unblock', 'mute', 'unmute'
     if (action === 'block' && !window.confirm("Are you sure you want to block this user?")) return;
     try {
       await api.post(`/users/${selectedUser.id}/relationship`, { action });
@@ -120,91 +117,73 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
   return (
     <div className="flex-1 flex flex-col h-full bg-white relative w-full overflow-hidden">
       {/* iOS Navigation Header */}
-      <div className="h-[75px] pt-6 flex-shrink-0 flex items-center justify-between px-4 border-b border-gray-200/50 bg-white z-20">
-        <div className="flex items-center">
-          <button 
-            onClick={() => setSelectedUser(null)} 
-            className="flex items-center text-iosBlue mr-2 active:opacity-50 md:hidden"
-          >
-            <ChevronLeft size={32} className="-ml-2" />
-            <span className="text-[17px] -ml-1 font-medium">Chats</span>
-          </button>
-          
-          <div className="flex items-center ml-1">
-            <div className="w-9 h-9 rounded-full bg-gray-200 mr-2 overflow-hidden flex-shrink-0 border border-gray-100">
-               {selectedUser.profile_pic ? (
-                 <img src={selectedUser.profile_pic} alt="avatar" className="w-full h-full object-cover" />
-               ) : (
-                 <div className="w-full h-full flex items-center justify-center text-sm text-gray-500 font-semibold">{selectedUser.name.charAt(0).toUpperCase()}</div>
-               )}
-            </div>
-            <div className="flex flex-col justify-center overflow-hidden">
-              <span className="font-bold text-black text-[16px] leading-tight truncate max-w-[120px] sm:max-w-[200px]">{selectedUser.name}</span>
-              <span className={`text-[12px] leading-tight font-medium ${isOnline ? 'text-green-500' : 'text-iosGray'}`}>
-                {isOnline ? 'Online' : 'Offline'}
-              </span>
+      <div className="flex-shrink-0 bg-white border-b border-gray-200/50 z-30">
+        <div className="h-safe-top"></div>
+        <div className="h-[60px] flex items-center justify-between px-4">
+          <div className="flex items-center overflow-hidden">
+            <button 
+              onClick={() => setSelectedUser(null)} 
+              className="flex items-center text-iosBlue mr-2 active:opacity-50 md:hidden"
+            >
+              <ChevronLeft size={32} className="-ml-2" />
+              <span className="text-[17px] -ml-1 font-medium">Chats</span>
+            </button>
+            
+            <div className="flex items-center ml-1 overflow-hidden">
+              <div className="w-9 h-9 rounded-full bg-gray-200 mr-2 overflow-hidden flex-shrink-0 border border-gray-100">
+                 {selectedUser.profile_pic ? (
+                   <img src={selectedUser.profile_pic} alt="avatar" className="w-full h-full object-cover" />
+                 ) : (
+                   <div className="w-full h-full flex items-center justify-center text-sm text-gray-500 font-semibold">{selectedUser.name.charAt(0).toUpperCase()}</div>
+                 )}
+              </div>
+              <div className="flex flex-col justify-center overflow-hidden">
+                <span className="font-bold text-black text-[16px] leading-tight truncate max-w-[100px] sm:max-w-[200px]">{selectedUser.name}</span>
+                <span className={`text-[12px] leading-tight font-medium ${isOnline ? 'text-green-500' : 'text-iosGray'}`}>
+                  {isOnline ? 'Online' : 'Offline'}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div className="flex items-center gap-5 text-iosBlue relative">
-          <button onClick={() => toast("Video calling coming soon! \u{1F3A5}")}>
-            <Video size={24} />
-          </button>
-          <button onClick={() => toast("Voice calling coming soon! \u{1F4DE}")}>
-            <Phone size={24} />
-          </button>
-          <button onClick={() => setShowDropdown(!showDropdown)} className="active:opacity-50">
-            <MoreVertical size={24} />
-          </button>
           
-          {/* Dropdown Menu */}
-          {showDropdown && (
-            <>
-              {/* Invisible overlay to close dropdown when clicking outside */}
-              <div 
-                className="fixed inset-0 z-40" 
-                onClick={() => setShowDropdown(false)}
-              ></div>
-              <div className="absolute top-10 right-0 w-48 bg-white/90 backdrop-blur-xl border border-gray-200/50 shadow-lg rounded-[14px] overflow-hidden z-50">
-                <button 
-                  onClick={() => handleToggleRelationship(isMuted ? 'unmute' : 'mute')}
-                  className="w-full text-left px-4 py-3 text-[17px] text-black border-b border-gray-200/50 hover:bg-gray-100/50 active:bg-gray-200"
-                >
-                  {isMuted ? 'Unmute Notifications' : 'Mute Notifications'}
-                </button>
-                <button 
-                  onClick={handleClearChat}
-                  className="w-full text-left px-4 py-3 text-[17px] text-black border-b border-gray-200/50 hover:bg-gray-100/50 active:bg-gray-200"
-                >
-                  Clear Chat
-                </button>
-                <button 
-                  onClick={handleClearChat}
-                  className="w-full text-left px-4 py-3 text-[17px] text-red-500 border-b border-gray-200/50 hover:bg-gray-100/50 active:bg-gray-200 font-medium"
-                >
-                  Delete Chat
-                </button>
-                <button 
-                  onClick={() => handleToggleRelationship(isBlocked ? 'unblock' : 'block')}
-                  className="w-full text-left px-4 py-3 text-[17px] text-red-500 hover:bg-gray-100/50 active:bg-gray-200"
-                >
-                  {isBlocked ? 'Unblock User' : 'Block User'}
-                </button>
-              </div>
-            </>
-          )}
+          <div className="flex items-center gap-4 text-iosBlue relative flex-shrink-0">
+            <button onClick={() => toast("Video calling coming soon! \u{1F3A5}")} className="active:opacity-50">
+              <Video size={24} />
+            </button>
+            <button onClick={() => toast("Voice calling coming soon! \u{1F4DE}")} className="active:opacity-50">
+              <Phone size={24} />
+            </button>
+            <button onClick={() => setShowDropdown(!showDropdown)} className="active:opacity-50">
+              <MoreVertical size={24} />
+            </button>
+            
+            {showDropdown && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)}></div>
+                <div className="absolute top-10 right-0 w-48 bg-white border border-gray-200/50 shadow-lg rounded-[14px] overflow-hidden z-50">
+                  <button onClick={() => handleToggleRelationship(isMuted ? 'unmute' : 'mute')} className="w-full text-left px-4 py-3 text-[17px] text-black border-b border-gray-200 hover:bg-gray-50 active:bg-gray-100">
+                    {isMuted ? 'Unmute' : 'Mute'}
+                  </button>
+                  <button onClick={handleClearChat} className="w-full text-left px-4 py-3 text-[17px] text-black border-b border-gray-200 hover:bg-gray-50 active:bg-gray-100">
+                    Clear Chat
+                  </button>
+                  <button onClick={() => handleToggleRelationship(isBlocked ? 'unblock' : 'block')} className="w-full text-left px-4 py-3 text-[17px] text-red-500 hover:bg-gray-50 active:bg-gray-100">
+                    {isBlocked ? 'Unblock' : 'Block'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Chat Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 no-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 no-scrollbar bg-white">
         {messages.map((msg, index) => {
           const isMe = msg.sender_id === authUser.id;
           const prevMsg = index > 0 ? messages[index - 1] : null;
           const msgDate = msg.created_at || msg.createdAt;
           const prevMsgDate = prevMsg ? (prevMsg.created_at || prevMsg.createdAt) : null;
-          
           const showDateSeparator = !prevMsg || (msgDate && prevMsgDate && new Date(msgDate).toDateString() !== new Date(prevMsgDate).toDateString());
 
           return (
@@ -233,26 +212,11 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
                     ? 'bg-iosBlue text-white rounded-br-sm' 
                     : 'bg-[#E9E9EB] text-black rounded-bl-sm'
                   }`}>
-                    {msg.image_url && msg.image_url.trim() !== '' && (
-                      <img 
-                        src={msg.image_url} 
-                        alt="image" 
-                        style={{
-                          maxWidth: '220px',
-                          maxHeight: '220px',
-                          borderRadius: '16px',
-                          display: 'block',
-                          cursor: 'pointer',
-                          objectFit: 'cover'
-                        }}
-                        onClick={() => window.open(msg.image_url, '_blank')}
-                        onError={(e) => { e.target.style.display = 'none' }}
-                      />
+                    {msg.image_url && (
+                      <img src={msg.image_url} alt="image" className="max-w-full rounded-2xl mb-1 cursor-pointer" onClick={() => window.open(msg.image_url, '_blank')} />
                     )}
-                    {msg.message && msg.message.trim() !== '' && (
-                      <p style={{ margin: msg.image_url ? '4px 0 0 0' : '0', fontSize: '17px', lineHeight: '22px' }}>
-                        {msg.message}
-                      </p>
+                    {msg.message && (
+                      <p className="text-[17px] leading-[22px]">{msg.message}</p>
                     )}
                   </div>
                 </div>
@@ -267,7 +231,10 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
       </div>
 
       {/* Bottom Input Area */}
-      <MessageInput onSendMessage={handleSendMessage} />
+      <div className="flex-shrink-0 bg-white border-t border-gray-200/50">
+        <MessageInput onSendMessage={handleSendMessage} />
+        <div className="h-safe-bottom"></div>
+      </div>
     </div>
   );
 }

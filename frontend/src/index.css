@@ -3,6 +3,12 @@
 @tailwind utilities;
 
 @layer utilities {
+  .h-safe-top {
+    height: env(safe-area-inset-top);
+  }
+  .h-safe-bottom {
+    height: env(safe-area-inset-bottom);
+  }
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
