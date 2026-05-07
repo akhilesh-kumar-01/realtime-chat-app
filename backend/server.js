@@ -10,6 +10,10 @@ const userRoutes = require('./routes/userRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const { apiLimiter } = require('./middleware/rateLimiter');
 const { initSocket } = require('./socket/socketHandler');
+const connectDB = require('./config/db');
+
+// Connect to MongoDB
+connectDB();
 
 // 1. Setup Express app
 const app = express();

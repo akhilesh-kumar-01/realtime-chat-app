@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('../config/db');
+const User = require('../models/User');
 const { sendWelcomeEmail } = require('../utils/sendEmail');
 require('dotenv').config();
 
@@ -14,29 +14,31 @@ const register = async (req, res) => {
       return res.status(400).json({ message: "Please provide name, username, email, and password" });
     }
 
-    // 2. Check if the email or username is already registered in our database
-    const [existingUsers] = await db.query('SELECT * FROM users WHERE email = ? OR username = ?', [email, username]);
-    if (existingUsers.length > 0) {
-      const isEmailTaken = existingUsers.some(u => u.email === email);
+    // 2. Check if the email or username is already registered
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    if (existingUser) {
       return res.status(400).json({ 
-        message: isEmailTaken ? "User with this email already exists" : "Username is already taken" 
+        message: existingUser.email === email ? "User with this email already exists" : "Username is already taken" 
       });
     }
 
-    // 3. Hash the password for security (10 rounds of salt)
+    // 3. Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 4. Insert the new user into the database
-    await db.query(
-      'INSERT INTO users (name, username, email, password) VALUES (?, ?, ?, ?)',
-      [name, username, email, hashedPassword]
-    );
+    // 4. Create and save the new user
+    const newUser = new User({
+      name,
+      username,
+      email,
+      password: hashedPassword
+    });
 
-    // 5. Send a welcome email in the background
+    await newUser.save();
+
+    // 5. Send welcome email
     sendWelcomeEmail(email, name);
 
-    // 6. Return a success message
     return res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
     console.error("Register Error:", error);
@@ -49,57 +51,57 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Check if email and password are provided
     if (!email || !password) {
       return res.status(400).json({ message: "Please provide email and password" });
     }
 
-    // 2. Find the user in the database by their email
-    const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    if (users.length === 0) {
+    // 2. Find the user
+    const user = await User.findOne({ email });
+    if (!user) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
-    const user = users[0];
 
-    // 3. Compare the typed password with the hashed password in the database
+    // 3. Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // 4. Create a JWT token so the user can stay logged in (expires in 7 days)
+    // 4. Create JWT
     const token = jwt.sign(
-      { id: user.id, email: user.email },
+      { id: user._id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    // 5. Remove the password from the user object before sending it to frontend
-    delete user.password;
+    // 5. Convert to object and remove password
+    const userData = user.toObject();
+    delete userData.password;
+    
+    // Add id field for frontend compatibility
+    userData.id = userData._id;
 
-    // 6. Return the token and the user data
-    return res.status(200).json({ token, user });
+    return res.status(200).json({ token, user: userData });
   } catch (error) {
     console.error("Login Error:", error);
     return res.status(500).json({ message: "Server error during login" });
   }
 };
 
-// Function to get the current logged-in user's profile
+// Function to get current user profile
 const getMe = async (req, res) => {
   try {
-    // req.user comes from our authMiddleware
     const userId = req.user.id;
-
-    // Find the user by ID
-    const [users] = await db.query('SELECT id, name, email, username, profile_pic, created_at FROM users WHERE id = ?', [userId]);
+    const user = await User.findById(userId).select('-password');
     
-    if (users.length === 0) {
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Return the user object
-    return res.status(200).json(users[0]);
+    const userData = user.toObject();
+    userData.id = userData._id;
+
+    return res.status(200).json(userData);
   } catch (error) {
     console.error("GetMe Error:", error);
     return res.status(500).json({ message: "Server error fetching user profile" });

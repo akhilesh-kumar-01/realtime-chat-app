@@ -1,32 +1,65 @@
-const db = require('../config/db');
+const User = require('../models/User');
+const Message = require('../models/Message');
 const { uploadImage } = require('../utils/cloudinary');
+const mongoose = require('mongoose');
 
-// Function to get all users to show in the sidebar (except the logged-in user)
+// Function to get all users for sidebar
 const getAllUsers = async (req, res) => {
   try {
-    // Get the logged-in user's ID from the middleware
-    const loggedInUserId = req.user.id;
+    const loggedInUserId = new mongoose.Types.ObjectId(req.user.id);
     const searchQuery = req.query.search || '';
 
-    // Fetch users excluding the current user.
-    // LEFT JOIN with messages to find the timestamp of the latest interaction.
-    // Search by name or username using LIKE.
-    // ORDER BY the last message time (newest first).
-    const [users] = await db.query(
-      `SELECT u.id, u.name, u.email, u.profile_pic, u.username,
-              MAX(m.created_at) as last_message_time
-       FROM users u
-       LEFT JOIN messages m 
-         ON (m.sender_id = u.id AND m.receiver_id = ?) 
-         OR (m.sender_id = ? AND m.receiver_id = u.id)
-       WHERE u.id != ? 
-         AND (u.name LIKE ? OR u.username LIKE ?)
-       GROUP BY u.id
-       ORDER BY last_message_time DESC, u.name ASC`,
-      [loggedInUserId, loggedInUserId, loggedInUserId, `%${searchQuery}%`, `%${searchQuery}%`]
-    );
+    // Aggregation pipeline to replicate the SQL query:
+    // 1. Find all users except the logged-in one
+    // 2. Filter by search query
+    // 3. Lookup messages for each user to find the latest interaction
+    // 4. Sort by last message time
+    const users = await User.aggregate([
+      {
+        $match: {
+          _id: { $ne: loggedInUserId },
+          $or: [
+            { name: { $regex: searchQuery, $options: 'i' } },
+            { username: { $regex: searchQuery, $options: 'i' } }
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: 'messages',
+          let: { userId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    { $and: [{ $eq: ['$sender_id', '$$userId'] }, { $eq: ['$receiver_id', loggedInUserId] }] },
+                    { $and: [{ $eq: ['$sender_id', loggedInUserId] }, { $eq: ['$receiver_id', '$$userId'] }] }
+                  ]
+                }
+              }
+            },
+            { $sort: { createdAt: -1 } },
+            { $limit: 1 }
+          ],
+          as: 'lastMessage'
+        }
+      },
+      {
+        $addFields: {
+          last_message_time: { $ifNull: [{ $arrayElemAt: ['$lastMessage.createdAt', 0] }, new Date(0)] },
+          id: '$_id'
+        }
+      },
+      {
+        $project: {
+          password: 0,
+          lastMessage: 0
+        }
+      },
+      { $sort: { last_message_time: -1, name: 1 } }
+    ]);
 
-    // Return the list of users
     return res.status(200).json(users);
   } catch (error) {
     console.error("Get All Users Error:", error);
@@ -34,43 +67,30 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// Function to update user profile (name and/or profile picture)
+// Function to update user profile
 const updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
     const { name } = req.body;
     let profilePicUrl = null;
 
-    // First, check if the user uploaded a new profile picture
-    // 'req.file' comes from the multer middleware we set up in routes
     if (req.file) {
-      // Upload the image to Cloudinary and get the secure URL
       profilePicUrl = await uploadImage(req.file.buffer);
     }
 
-    // Now, update the database
-    // If they uploaded a new picture, update both name and picture
-    // If no new picture, just update the name
-    if (profilePicUrl) {
-      await db.query(
-        'UPDATE users SET name = ?, profile_pic = ? WHERE id = ?',
-        [name, profilePicUrl, userId]
-      );
-    } else {
-      await db.query(
-        'UPDATE users SET name = ? WHERE id = ?',
-        [name, userId]
-      );
-    }
+    const updateData = { name };
+    if (profilePicUrl) updateData.profile_pic = profilePicUrl;
 
-    // Fetch the updated user data to return to the frontend
-    const [updatedUsers] = await db.query(
-      'SELECT id, name, email, username, profile_pic, created_at FROM users WHERE id = ?',
-      [userId]
-    );
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      { new: true }
+    ).select('-password');
 
-    // Return the updated user object
-    return res.status(200).json(updatedUsers[0]);
+    const userData = updatedUser.toObject();
+    userData.id = userData._id;
+
+    return res.status(200).json(userData);
   } catch (error) {
     console.error("Update Profile Error:", error);
     return res.status(500).json({ message: "Server error updating profile" });
@@ -84,31 +104,13 @@ const updateRelationship = async (req, res) => {
     const targetUserId = req.params.targetId;
     const { action } = req.body; // 'block', 'unblock', 'mute', 'unmute'
 
-    // First check if relationship exists
-    const [existing] = await db.query(
-      'SELECT * FROM user_relationships WHERE user_id = ? AND target_user_id = ?',
-      [userId, targetUserId]
-    );
+    const update = {};
+    if (action === 'block') update.$addToSet = { blockedUsers: targetUserId };
+    if (action === 'unblock') update.$pull = { blockedUsers: targetUserId };
+    if (action === 'mute') update.$addToSet = { mutedUsers: targetUserId };
+    if (action === 'unmute') update.$pull = { mutedUsers: targetUserId };
 
-    let isBlocked = existing.length > 0 ? existing[0].is_blocked : 0;
-    let isMuted = existing.length > 0 ? existing[0].is_muted : 0;
-
-    if (action === 'block') isBlocked = 1;
-    if (action === 'unblock') isBlocked = 0;
-    if (action === 'mute') isMuted = 1;
-    if (action === 'unmute') isMuted = 0;
-
-    if (existing.length > 0) {
-      await db.query(
-        'UPDATE user_relationships SET is_blocked = ?, is_muted = ? WHERE user_id = ? AND target_user_id = ?',
-        [isBlocked, isMuted, userId, targetUserId]
-      );
-    } else {
-      await db.query(
-        'INSERT INTO user_relationships (user_id, target_user_id, is_blocked, is_muted) VALUES (?, ?, ?, ?)',
-        [userId, targetUserId, isBlocked, isMuted]
-      );
-    }
+    await User.findByIdAndUpdate(userId, update);
 
     return res.status(200).json({ message: `Successfully applied action: ${action}` });
   } catch (error) {
@@ -117,20 +119,18 @@ const updateRelationship = async (req, res) => {
   }
 };
 
-// Function to delete user account completely
+// Function to delete account
 const deleteAccount = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Delete all messages associated with the user
-    await db.query(
-      'DELETE FROM messages WHERE sender_id = ? OR receiver_id = ?',
-      [userId, userId]
-    );
+    // Delete messages
+    await Message.deleteMany({
+      $or: [{ sender_id: userId }, { receiver_id: userId }]
+    });
 
-    // Delete the user (user_relationships will cascade if we set up FOREIGN KEY properly, but let's be safe)
-    await db.query('DELETE FROM user_relationships WHERE user_id = ? OR target_user_id = ?', [userId, userId]);
-    await db.query('DELETE FROM users WHERE id = ?', [userId]);
+    // Delete user
+    await User.findByIdAndDelete(userId);
 
     return res.status(200).json({ message: "Account deleted successfully" });
   } catch (error) {
