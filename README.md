@@ -135,10 +135,10 @@ I implemented a **Push-to-Deploy** workflow using GitHub Actions.
 
 ## 🛠️ Challenges I Faced (and solved!)
 
-- **The "Invalid Date" Mystery:** MongoDB's `createdAt` didn't match the frontend's expected `created_at` field, causing messages to show as "Invalid Date". I fixed this by standardizing the fields in the backend controllers.
-- **OnePlus 12 Display Issue:** On devices with curved screens or notches, the chat bubbles were being cut off. I had to implement a custom **Safe Area** padding strategy and use `min-w-0` to fix flexbox overflow.
-- **Large Image Rejection:** I found that OnePlus photos are often 10MB+, which exceeded the default server limits. I increased the backend payload limit to **50MB** and added **Frontend Image Compression** using a Canvas-based approach to ensure photos stay under Cloudinary's 10MB limit.
-- **CORS & SPA Routing:** Solving "404 on Refresh" on Vercel required a custom `vercel.json` file to redirect all requests to `index.html`.
+- **The "Invalid Date" bug:** I spent some time fixing a bug where new messages would show "Invalid Date". It turned out my database was sending `createdAt` but my code was looking for `created_at`. I fixed this in my controllers so they match.
+- **Chats cutting on mobile (OnePlus 12):** On phones with curved screens like my OnePlus 12, the chat bubbles were touching the edges and looked bad. I fixed this by adding more padding and making sure the layout stays inside the screen properly.
+- **Large photos not saving:** Modern phone photos are huge (10MB+). My server was rejecting them because they were too big, and Cloudinary also has a 10MB limit. I fixed this by increasing the server limit to 50MB and adding a simple script to shrink the photo size automatically before it uploads.
+- **Website showing 404 on Refresh:** When I deployed to Vercel, the app would show a 404 error if I refreshed the page. I fixed this by adding a `vercel.json` file to tell Vercel how to handle the page routing.
 
 ---
 
