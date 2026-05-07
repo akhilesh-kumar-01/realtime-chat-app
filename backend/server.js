@@ -21,8 +21,8 @@ const app = express();
 // 2. Add basic middlewares
 // Enable CORS so our frontend (running on a different port) can talk to this backend
 app.use(cors());
-// Allow our app to read JSON data from incoming requests
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // 3. Apply the rate limiter to all API routes to prevent spam
 app.use('/api', apiLimiter);

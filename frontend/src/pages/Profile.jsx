@@ -42,9 +42,7 @@ function Profile() {
       }
 
       // We hit the backend route we created in step 1.10
-      const res = await api.put('/users/profile', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const res = await api.put('/users/profile', formData);
       
       setAuthUser(res.data);
       toast.success('Profile updated successfully!');
