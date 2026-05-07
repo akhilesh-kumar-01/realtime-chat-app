@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 // Create a custom axios instance with our backend URL
-// This saves us from typing "http://localhost:5000/api" every single time
+// This saves us from typing the URL every single time
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://realtime-chat-app-34u8.onrender.com/api',
 });
 
 // Add an interceptor to the request
