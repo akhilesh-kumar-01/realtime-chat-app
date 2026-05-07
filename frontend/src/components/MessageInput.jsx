@@ -27,7 +27,7 @@ function MessageInput({ onSendMessage }) {
   };
 
   return (
-    <div className="px-4 py-3 bg-[#F6F6F6] border-t border-gray-200/50 pb-safe z-10 relative">
+    <div className="px-4 py-3 bg-[#F6F6F6] border-t border-gray-200/50 pb-safe z-10 relative flex-shrink-0">
       {/* Image Preview Box */}
       {image && (
         <div className="mb-2 relative inline-block">

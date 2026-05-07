@@ -88,7 +88,7 @@ function Sidebar({ selectedUser, setSelectedUser }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white relative overflow-hidden">
+    <div className="flex flex-col h-full bg-white relative overflow-hidden pt-safe">
       {/* iOS Large Header */}
       <div className="px-4 pt-8 pb-2 flex justify-between items-center">
         <h1 className="text-[34px] font-bold text-black tracking-tight">Chats</h1>
@@ -116,7 +116,7 @@ function Sidebar({ selectedUser, setSelectedUser }) {
       </div>
 
       {/* User List */}
-      <div className="flex-1 overflow-y-auto mt-2">
+      <div className="flex-1 overflow-y-auto mt-2 no-scrollbar">
         {users.map((user) => {
           const isOnline = onlineUsers.includes(user.id);
           const isSelected = selectedUser?.id === user.id;

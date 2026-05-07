@@ -7,7 +7,7 @@ function Home() {
   const [selectedUser, setSelectedUser] = useState(null);
 
   return (
-    <div className="flex h-screen bg-white overflow-hidden">
+    <div className="flex h-screen-ios bg-white overflow-hidden">
       {/* Sidebar handles showing all users and the search bar */}
       <div className={`w-full md:w-[350px] flex-shrink-0 border-r border-gray-200/50 ${selectedUser ? 'hidden md:block' : 'block'}`}>
         <Sidebar selectedUser={selectedUser} setSelectedUser={setSelectedUser} />

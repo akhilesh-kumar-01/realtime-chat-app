@@ -118,9 +118,9 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
   const isOnline = onlineUsers.includes(selectedUser.id);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white relative w-full">
+    <div className="flex-1 flex flex-col h-full bg-white relative w-full pt-safe">
       {/* iOS Navigation Header */}
-      <div className="h-[60px] flex items-center justify-between px-4 border-b border-gray-200/50 bg-white/80 backdrop-blur-md z-10">
+      <div className="h-[60px] flex-shrink-0 flex items-center justify-between px-4 border-b border-gray-200/50 bg-white/80 backdrop-blur-md z-10">
         <div className="flex items-center">
           <button onClick={() => setSelectedUser(null)} className="flex items-center text-iosBlue mr-4 md:hidden">
             <ChevronLeft size={28} className="-ml-2" />
@@ -195,7 +195,7 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
       </div>
 
       {/* Chat Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 no-scrollbar">
         {messages.map((msg, index) => {
           const isMe = msg.sender_id === authUser.id;
           const prevMsg = index > 0 ? messages[index - 1] : null;
