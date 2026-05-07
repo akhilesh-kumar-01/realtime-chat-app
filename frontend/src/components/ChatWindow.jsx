@@ -115,7 +115,7 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
   const isOnline = onlineUsers.includes(selectedUser.id);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white relative w-full overflow-hidden">
+    <div className="flex-1 flex flex-col h-full bg-white relative min-w-0 overflow-hidden">
       {/* iOS Navigation Header */}
       <div className="flex-shrink-0 bg-white border-b border-gray-200/50 z-30">
         <div className="h-safe-top"></div>
@@ -178,7 +178,7 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
       </div>
 
       {/* Chat Messages Area */}
-      <div className="flex-1 overflow-y-auto px-8 py-4 space-y-4 no-scrollbar bg-white">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-10 py-4 space-y-4 no-scrollbar bg-white">
         {messages.map((msg, index) => {
           const isMe = msg.sender_id === authUser.id;
           const prevMsg = index > 0 ? messages[index - 1] : null;
@@ -196,7 +196,7 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
                 </div>
               )}
               <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                <div className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} w-full`}>
                   {!isMe && (
                     <div className="w-7 h-7 rounded-full bg-gray-200 mr-2 flex-shrink-0 self-end overflow-hidden mb-1">
                        {selectedUser.profile_pic ? (
@@ -207,7 +207,7 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
                     </div>
                   )}
                   
-                  <div className={`max-w-[65%] px-4 py-2.5 rounded-[18px] flex flex-col ${
+                  <div className={`max-w-[75%] px-4 py-2.5 rounded-[18px] flex flex-col break-words ${
                     isMe 
                     ? 'bg-iosBlue text-white rounded-br-sm shadow-md' 
                     : 'bg-[#E9E9EB] text-black rounded-bl-sm shadow-sm'
