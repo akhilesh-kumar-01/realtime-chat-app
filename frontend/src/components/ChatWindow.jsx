@@ -232,11 +232,11 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
                     </div>
                   )}
                   
-                  <div className={`max-w-[75%] px-4 py-2.5 rounded-[18px] flex flex-col break-words ${
+                  <div className={`max-w-[75%] rounded-[18px] flex flex-col break-words overflow-hidden ${
                     isMe 
                     ? 'bg-iosBlue text-white rounded-br-sm shadow-md' 
                     : 'bg-[#E9E9EB] text-black rounded-bl-sm shadow-sm'
-                  } ${msg.image_url ? 'p-1' : 'px-4 py-2.5'}`}>
+                  } ${msg.image_url ? 'p-[3px]' : 'px-4 py-2.5'}`}>
                     {msg.image_url && (
                       <div 
                         className="relative group cursor-pointer overflow-hidden rounded-[14px]"
