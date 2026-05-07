@@ -1,4 +1,4 @@
-# Real-Time Chat App 🚀
+# Real-Time Chat App 🚀 | [Live Link](https://realtime-chat-app-drab-beta.vercel.app/)
 
 Hi! I'm Akhilesh, a B.Tech student. I built this project to learn full-stack web development and figure out how real-time applications actually work under the hood. It was a great learning experience!
 
