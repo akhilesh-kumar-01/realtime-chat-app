@@ -120,7 +120,7 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
   return (
     <div className="flex-1 flex flex-col h-full bg-white relative w-full overflow-hidden">
       {/* iOS Navigation Header */}
-      <div className="h-[70px] pt-4 flex-shrink-0 flex items-center justify-between px-4 border-b border-gray-200/50 bg-white/95 backdrop-blur-md z-20 sticky top-0">
+      <div className="h-[75px] pt-6 flex-shrink-0 flex items-center justify-between px-4 border-b border-gray-200/50 bg-white z-20">
         <div className="flex items-center">
           <button 
             onClick={() => setSelectedUser(null)} 

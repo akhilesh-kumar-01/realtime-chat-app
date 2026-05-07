@@ -14,7 +14,7 @@ function Home() {
       </div>
       
       {/* Chat Window takes the rest of the space */}
-      <div className={`flex-1 ${!selectedUser ? 'hidden md:flex' : 'flex'}`}>
+      <div className={`flex-1 h-full ${!selectedUser ? 'hidden md:flex' : 'flex'}`}>
         {selectedUser ? (
           <ChatWindow selectedUser={selectedUser} setSelectedUser={setSelectedUser} />
         ) : (
