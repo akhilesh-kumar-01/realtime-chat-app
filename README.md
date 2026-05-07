@@ -11,6 +11,12 @@
 
 ---
 
+## 📸 App Preview
+
+![Chat App Screenshot](assets/chat_image.png)
+
+---
+
 ## 🌟 Project Overview
 
 Hey there! I'm **Akhilesh Kr.**, a B.Tech CSE student. I built this project to dive deep into how real-time communication works in the modern web. I wanted to create something that wasn't just a basic "Hello World" chat, but a production-ready app with image sharing, profile management, and a clean, responsive UI that feels like a native iOS app.
