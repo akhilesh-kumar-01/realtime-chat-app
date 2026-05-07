@@ -36,11 +36,11 @@ const sendMessage = async (req, res) => {
   try {
     const senderId = req.user.id;
     const receiverId = req.params.userId;
-    const { message } = req.body;
-    let imageUrl = '';
+    const { message, image_url } = req.body;
+    let finalImageUrl = image_url || '';
 
     if (req.file) {
-      imageUrl = await uploadImage(req.file.buffer);
+      finalImageUrl = await uploadImage(req.file.buffer);
     }
 
     // Check if the receiver has blocked the sender
@@ -54,7 +54,7 @@ const sendMessage = async (req, res) => {
       sender_id: senderId,
       receiver_id: receiverId,
       message: message || '',
-      image_url: imageUrl
+      image_url: finalImageUrl
     });
 
     await newMessage.save();

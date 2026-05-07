@@ -5,6 +5,8 @@ import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
 import MessageInput from './MessageInput';
 import toast from 'react-hot-toast';
+import ImageModal from './ImageModal';
+import ForwardModal from './ForwardModal';
 
 function ChatWindow({ selectedUser, setSelectedUser }) {
   const [messages, setMessages] = useState([]);
@@ -14,6 +16,10 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
+  
+  // Image related states
+  const [activeImageUrl, setActiveImageUrl] = useState(null);
+  const [forwardingImageUrl, setForwardingImageUrl] = useState(null);
 
   // Helper to format time
   const formatTime = (timestamp) => {
@@ -116,6 +122,25 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-white relative min-w-0 overflow-hidden">
+      {/* Modals */}
+      {activeImageUrl && (
+        <ImageModal 
+          imageUrl={activeImageUrl} 
+          onClose={() => setActiveImageUrl(null)} 
+          onForward={(url) => {
+            setActiveImageUrl(null);
+            setForwardingImageUrl(url);
+          }}
+        />
+      )}
+      
+      {forwardingImageUrl && (
+        <ForwardModal 
+          imageUrl={forwardingImageUrl} 
+          onClose={() => setForwardingImageUrl(null)} 
+        />
+      )}
+
       {/* iOS Navigation Header */}
       <div className="flex-shrink-0 bg-white border-b border-gray-200/50 z-30">
         <div className="h-safe-top"></div>
@@ -211,12 +236,22 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
                     isMe 
                     ? 'bg-iosBlue text-white rounded-br-sm shadow-md' 
                     : 'bg-[#E9E9EB] text-black rounded-bl-sm shadow-sm'
-                  }`}>
+                  } ${msg.image_url ? 'p-1' : 'px-4 py-2.5'}`}>
                     {msg.image_url && (
-                      <img src={msg.image_url} alt="image" className="max-w-full rounded-2xl mb-1 cursor-pointer" onClick={() => window.open(msg.image_url, '_blank')} />
+                      <div 
+                        className="relative group cursor-pointer overflow-hidden rounded-[14px]"
+                        onClick={() => setActiveImageUrl(msg.image_url)}
+                      >
+                        <img 
+                          src={msg.image_url} 
+                          alt="image" 
+                          className="max-w-full max-h-[250px] object-cover transition-transform duration-300 group-hover:scale-105" 
+                        />
+                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors"></div>
+                      </div>
                     )}
                     {msg.message && (
-                      <p className="text-[17px] leading-[22px]">{msg.message}</p>
+                      <p className={`text-[17px] leading-[22px] ${msg.image_url ? 'p-2' : ''}`}>{msg.message}</p>
                     )}
                   </div>
                 </div>
