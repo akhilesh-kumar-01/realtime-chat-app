@@ -88,9 +88,9 @@ function Sidebar({ selectedUser, setSelectedUser }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white relative overflow-hidden pt-safe">
+    <div className="flex flex-col h-full bg-white relative overflow-hidden">
       {/* iOS Large Header */}
-      <div className="px-4 pt-8 pb-2 flex justify-between items-center">
+      <div className="px-4 pt-12 pb-2 flex justify-between items-center bg-white sticky top-0 z-20">
         <h1 className="text-[34px] font-bold text-black tracking-tight">Chats</h1>
         <Link to="/profile" className="w-9 h-9 bg-iosLightGray rounded-full flex items-center justify-center overflow-hidden active:opacity-70 transition-opacity">
            {authUser?.profile_pic ? (

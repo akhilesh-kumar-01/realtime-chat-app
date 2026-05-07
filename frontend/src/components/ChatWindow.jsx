@@ -118,26 +118,29 @@ function ChatWindow({ selectedUser, setSelectedUser }) {
   const isOnline = onlineUsers.includes(selectedUser.id);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white relative w-full pt-safe">
+    <div className="flex-1 flex flex-col h-full bg-white relative w-full overflow-hidden">
       {/* iOS Navigation Header */}
-      <div className="h-[60px] flex-shrink-0 flex items-center justify-between px-4 border-b border-gray-200/50 bg-white/80 backdrop-blur-md z-10">
+      <div className="h-[70px] pt-4 flex-shrink-0 flex items-center justify-between px-4 border-b border-gray-200/50 bg-white/95 backdrop-blur-md z-20 sticky top-0">
         <div className="flex items-center">
-          <button onClick={() => setSelectedUser(null)} className="flex items-center text-iosBlue mr-4 md:hidden">
-            <ChevronLeft size={28} className="-ml-2" />
-            <span className="text-[17px] -ml-1">Chats</span>
+          <button 
+            onClick={() => setSelectedUser(null)} 
+            className="flex items-center text-iosBlue mr-2 active:opacity-50 md:hidden"
+          >
+            <ChevronLeft size={32} className="-ml-2" />
+            <span className="text-[17px] -ml-1 font-medium">Chats</span>
           </button>
           
-          <div className="flex items-center">
-            <div className="w-8 h-8 rounded-full bg-gray-200 mr-2 overflow-hidden flex-shrink-0">
+          <div className="flex items-center ml-1">
+            <div className="w-9 h-9 rounded-full bg-gray-200 mr-2 overflow-hidden flex-shrink-0 border border-gray-100">
                {selectedUser.profile_pic ? (
                  <img src={selectedUser.profile_pic} alt="avatar" className="w-full h-full object-cover" />
                ) : (
-                 <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 font-semibold">{selectedUser.name.charAt(0).toUpperCase()}</div>
+                 <div className="w-full h-full flex items-center justify-center text-sm text-gray-500 font-semibold">{selectedUser.name.charAt(0).toUpperCase()}</div>
                )}
             </div>
-            <div className="flex flex-col justify-center">
-              <span className="font-semibold text-black text-[15px] leading-tight">{selectedUser.name}</span>
-              <span className={`text-[11px] leading-tight ${isOnline ? 'text-green-500' : 'text-iosGray'}`}>
+            <div className="flex flex-col justify-center overflow-hidden">
+              <span className="font-bold text-black text-[16px] leading-tight truncate max-w-[120px] sm:max-w-[200px]">{selectedUser.name}</span>
+              <span className={`text-[12px] leading-tight font-medium ${isOnline ? 'text-green-500' : 'text-iosGray'}`}>
                 {isOnline ? 'Online' : 'Offline'}
               </span>
             </div>

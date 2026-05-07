@@ -59,15 +59,15 @@ function Profile() {
   return (
     <div className="min-h-screen bg-iosLightGray flex flex-col">
       {/* iOS Navigation Bar */}
-      <div className="h-[60px] flex items-center justify-between px-4 bg-white border-b border-gray-200/50 sticky top-0 z-10">
+      <div className="h-[75px] pt-4 flex items-center justify-between px-4 bg-white border-b border-gray-200/50 sticky top-0 z-20">
         <Link to="/" className="flex items-center text-iosBlue w-20 active:opacity-70 transition-opacity">
-          <ChevronLeft size={28} className="-ml-2" />
-          <span className="text-[17px] -ml-1">Chats</span>
+          <ChevronLeft size={32} className="-ml-2" />
+          <span className="text-[17px] -ml-1 font-medium">Chats</span>
         </Link>
-        <h1 className="font-semibold text-black text-[17px]">Profile</h1>
+        <h1 className="font-bold text-black text-[17px]">Profile</h1>
         {(profilePic || name !== authUser?.name) ? (
-          <button onClick={handleSave} disabled={isLoading} className="text-iosBlue text-[17px] w-20 text-right font-bold active:opacity-70 transition-opacity animate-pulse">
-            {isLoading ? 'Saving...' : 'Save'}
+          <button onClick={handleSave} disabled={isLoading} className="text-iosBlue text-[17px] w-20 text-right font-bold active:opacity-70 transition-opacity">
+            {isLoading ? '...' : 'Save'}
           </button>
         ) : (
           <div className="w-20"></div>
