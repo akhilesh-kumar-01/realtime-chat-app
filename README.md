@@ -120,7 +120,7 @@ Register a new account and start chatting! 🎉
 
 **Problem:** Cloudinary not working
 **Fix:** Double check your Cloudinary API keys in `.env`
-
+# Test The App Live 🚀 | [Live Link](https://realtime-chat-app-drab-beta.vercel.app/)
 ---
 
 Thanks for checking out my project!
